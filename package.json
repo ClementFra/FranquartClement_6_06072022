@@ -1,0 +1,24 @@
+{
+  "name": "franquartclement_6_06072022",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u0000F\u0000r\u0000a\u0000n\u0000q\u0000u\u0000a\u0000r\u0000t\u0000C\u0000l\u0000e\u0000m\u0000e\u0000n\u0000t\u0000_\u0000P\u00006\u0000_\u00000\u00006\u00000\u00007\u00002\u00000\u00002\u00002\u0000\r\u0000 \u0000",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ClementFra/FranquartClement_P6_06072022.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ClementFra/FranquartClement_P6_06072022/issues"
+  },
+  "homepage": "https://github.com/ClementFra/FranquartClement_P6_06072022#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1"
+  }
+}
