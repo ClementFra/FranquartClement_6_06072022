@@ -14,7 +14,7 @@ module.exports = (req, res, next) => {
         throw 'Invalid ID';
       }
 	next();
-   } catch(error) {
-       res.status(401).json({ error });
+   } catch{
+       res.status(403).json({ error: new Error(`Unauthorized request.`) });
    }
 };
