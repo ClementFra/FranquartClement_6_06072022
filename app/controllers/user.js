@@ -1,7 +1,38 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
+const cryptoJS = require("crypto-js");
 require("dotenv").config();
+
+
+
+
+
+function encrypt(data){
+   const encrypted = cryptoJS.AES.encrypt(
+    data, 
+    cryptoJS.enc.Utf8.parse(process.env.SECRET_KEY), 
+    {
+      iv: cryptoJS.enc.Utf8.parse(process.env.IV),
+      mode: cryptoJS.mode.ECB,
+      padding: cryptoJS.pad.Pkcs7
+  });
+  return encrypted.toString();
+}
+
+function decrypt(data){
+  console.log(data)
+  const decrypted = cryptoJS.AES.decrypt(
+    data, 
+    cryptoJS.enc.Utf8.parse(process.env.SECRET_KEY), 
+    {
+      iv: cryptoJS.enc.Utf8.parse(process.env.IV),
+      mode: cryptoJS.mode.ECB,
+      padding: cryptoJS.pad.Pkcs7
+  });
+  console.log(decrypted)
+  return decrypted.toString(cryptoJS.enc.Utf8)
+}
 
 // Register for a new user
 exports.signup = (req, res, next) => {
@@ -9,15 +40,20 @@ exports.signup = (req, res, next) => {
     .hash(req.body.password, 10)
     .then((hash) => {
       const user = new User({
-        email: req.body.email,
+        email: encrypt(req.body.email),
         password: hash,
       });
+      console.log(user.email)
       user
         .save()
-        .then((user) => res.status(201).json(user))
+        .then((newUser) =>{
+          console.log(newUser.email)
+          user.email= decrypt(newUser.email)
+          res.status(201).json(newUser)
+        })
         .catch((error) => res.status(400).json({ error }));
     })
-    .catch((error) => res.status(500).json({ error }));
+    .catch((error) =>console.log(error));
 };
 
 // login user who's is already register

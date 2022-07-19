@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 require("./config/db.config");
 require("dotenv").config();
+const router = require("./app/routes/index");
+
 
 //Settings corps
 const app = express();
@@ -14,9 +16,7 @@ var corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to piiquante application." });
-});
+app.use("/api", router)
 
 // Port listener for requests
 const PORT = process.env.PORT || 3000;
