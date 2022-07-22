@@ -4,9 +4,7 @@ const jwt = require("jsonwebtoken");
 const cryptoJS = require("crypto-js");
 require("dotenv").config();
 
-
-
-
+// encrypt the users mail
 
 function encrypt(data){
    const encrypted = cryptoJS.AES.encrypt(
@@ -19,6 +17,8 @@ function encrypt(data){
   });
   return encrypted.toString();
 }
+
+// decrypt the users mail
 
 function decrypt(data){
   console.log(data)
@@ -71,6 +71,7 @@ exports.login = (req, res, next) => {
           }
           res.status(200).json({
             userId: user._id,
+            // creating a token for the session
             token: jwt.sign({ userId: user._id }, process.env.TOKEN_SECRET, {
               expiresIn: "24h",
             }),
