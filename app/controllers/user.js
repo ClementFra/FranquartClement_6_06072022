@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const cryptoJS = require("crypto-js");
 require("dotenv").config();
 
-// encrypt the users mail
+// Encrypt the users mail
 
 function encrypt(data){
    const encrypted = cryptoJS.AES.encrypt(
@@ -18,7 +18,7 @@ function encrypt(data){
   return encrypted.toString();
 }
 
-// decrypt the users mail
+// Decrypt the users mail
 
 function decrypt(data){
   console.log(data)
@@ -56,7 +56,7 @@ exports.signup = (req, res, next) => {
     .catch((error) =>console.log(error));
 };
 
-// login user who's is already register
+// Login user who's is already register
 exports.login = (req, res, next) => {
   User.findOne({ email: req.body.email })
     .then((user) => {
@@ -71,7 +71,7 @@ exports.login = (req, res, next) => {
           }
           res.status(200).json({
             userId: user._id,
-            // creating a token for the session
+            // Creating a token for the session
             token: jwt.sign({ userId: user._id }, process.env.TOKEN_SECRET, {
               expiresIn: "24h",
             }),
@@ -82,7 +82,7 @@ exports.login = (req, res, next) => {
     .catch((error) => res.status(500).json({ error }));
 };
 
-//users data 
+// Users data 
 exports.readUser = (req, res, next) => {
   User.findById(req.auth.userId)
     .then((user) => {
@@ -120,7 +120,7 @@ exports.exportUserData = (req, res, next) => {
     }));
 }
 
-//Update users
+// Update users
 exports.updateUser = (req, res, next) => {
   User.findById(req.auth.userId)
     .then((user) => {

@@ -6,13 +6,13 @@ require("dotenv").config();
 const router = require("./app/routes/index");
 
 
-//Settings corps
+// Settings corps
 const app = express();
 var corsOptions = {
   origin: "http://localhost:4200/",
 };
 
-//middleware corps
+// Middleware corps
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
