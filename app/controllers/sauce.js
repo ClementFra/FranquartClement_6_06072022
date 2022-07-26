@@ -1,4 +1,5 @@
 const Sauce = require("../models/sauce");
+const fs = require("fs");
 
 // Return the id of sauce
 
@@ -35,7 +36,7 @@ exports.readAllSauces = (req, res, next) => {
     );
 };
 
-// create and add a new sauce in the database
+// Create and add a new sauce in the database
 
 exports.createNewSauce = (req, res, next) => {
   if (!req.body.sauce) {
@@ -43,7 +44,7 @@ exports.createNewSauce = (req, res, next) => {
       message: "Sauce not found !",
     });
   }
-  // creation new model sauce
+  // Creation new model sauce
   const sauceObject = JSON.parse(req.body.sauce);
   const sauce = new Sauce({
     ...sauceObject,
@@ -51,8 +52,9 @@ exports.createNewSauce = (req, res, next) => {
     imageUrl: `/images/${req.file.filename}`,
   });
   // Recording new object in the database
-  sauce.save()
-    .then((newSauce) => res.status(201).json(newSauce))
+  sauce
+    .save()
+    .then((newSauce) => res.status(201).json({ message: "Object modified !" }))
     .catch((error) =>
       res.status(400).json({
         error,
@@ -63,15 +65,14 @@ exports.createNewSauce = (req, res, next) => {
 //Modify sauce
 
 exports.modifySauce = (req, res, next) => {
-  const sauceObject = req.file ? 
-    //if the picture exist
+  const sauceObject = req.file
+    ? // If the picture exist
       {
         ...JSON.parse(req.body.sauce),
         imageUrl: `${req.protocol}://${req.get("host")}/images/${
-          req.file.filename
-        }`,
+          req.file.filename}`,
       } : { ...req.body };
-  //if the pictures don't exist
+  //If the pictures don't exist
   Sauce.updateOne(
     { _id: req.params.id },
     { ...sauceObject, _id: req.params.id }
@@ -80,12 +81,31 @@ exports.modifySauce = (req, res, next) => {
     .catch((error) => res.status(400).json({ error }));
 };
 
+// Delete sauce
+
+exports.deleteSauce = (req, res, next) => {
+  Sauce.findOne({ _id: req.params.id }).then((sauce) => {
+    if (sauce.userId !== req.auth.userId) {
+      res.status(403).json({
+        error: new Error("non-authorization !"),
+      });
+      const filename = sauce.imageUrl.split("/images/")[1];
+      // Delete
+      fs.unlink(`images/${filename}`, () => {
+        Sauce.deleteOne({ _id: req.params.id })
+          .then(() => res.status(200).json({ message: "Object removed !" }))
+          .catch((error) => res.status(400).json({ error }));
+      });
+    }
+  });
+};
+
 // Create like or dislike
 
 exports.likeOrDislike = (req, res, next) => {
-  //  if the user like sauce
+  //  If the user like sauce
   if (req.body.like === 1) {
-    // update 1 like & push the like in the table usersLiked
+    // Update 1 like & push the like in the table usersLiked
     Sauce.updateOne(
       { _id: req.params.id },
       {
@@ -96,8 +116,8 @@ exports.likeOrDislike = (req, res, next) => {
       .then((sauce) => res.status(200).json({ message: "Like add !" }))
       .catch((error) => res.status(400).json({ error }));
   } else if (req.body.like === -1) {
-    // if the user dislike sauce
-    // update 1 like & push the dislike in the table usersDisliked
+    // If the user dislike sauce
+    // Update 1 like & push the dislike in the table usersDisliked
     Sauce.updateOne(
       { _id: req.params.id },
       {
@@ -141,5 +161,3 @@ exports.likeOrDislike = (req, res, next) => {
       .catch((error) => res.status(400).json({ error }));
   }
 };
-
-
