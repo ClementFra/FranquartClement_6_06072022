@@ -72,7 +72,7 @@ exports.likeOrDislike = (req, res, next) => {
         $push: { usersLiked: req.body.userId },
       }
     )
-      .then((sauce) => res.status(200).json({ message: "Like ajouté !" }))
+      .then((sauce) => res.status(200).json({ message: "Like add !" }))
       .catch((error) => res.status(400).json({ error }));
   } else if (req.body.like === -1) {
     // if the user dislike sauce
@@ -84,7 +84,7 @@ exports.likeOrDislike = (req, res, next) => {
         $push: { usersDisliked: req.body.userId },
       }
     )
-      .then((sauce) => res.status(200).json({ message: "Dislike ajouté !" }))
+      .then((sauce) => res.status(200).json({ message: "Dislike add !" }))
       .catch((error) => res.status(400).json({ error }));
   } else {
     // if like == 0 the user remove the vote
@@ -98,12 +98,12 @@ exports.likeOrDislike = (req, res, next) => {
             { $pull: { usersLiked: req.body.userId }, $inc: { likes: -1 } }
           )
             .then((sauce) => {
-              res.status(200).json({ message: "Like supprimé !" });
+              res.status(200).json({ message: "Like removed!" });
             })
             .catch((error) => res.status(400).json({ error }));
         } else if (sauce.usersDisliked.includes(req.body.userId)) {
           // if the table userDisLiked have the id of the user
-          // Remove the lie in the table
+          // Remove the like in the table
           Sauce.updateOne(
             { _id: req.params.id },
             {
@@ -112,7 +112,7 @@ exports.likeOrDislike = (req, res, next) => {
             }
           )
             .then((sauce) => {
-              res.status(200).json({ message: "Dislike supprimé !" });
+              res.status(200).json({ message: "Dislike removed !" });
             })
             .catch((error) => res.status(400).json({ error }));
         }
