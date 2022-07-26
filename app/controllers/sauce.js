@@ -43,20 +43,41 @@ exports.createNewSauce = (req, res, next) => {
       message: "Sauce not found !",
     });
   }
+  // creation new model sauce
   const sauceObject = JSON.parse(req.body.sauce);
   const sauce = new Sauce({
     ...sauceObject,
     userId: req.auth.userId,
     imageUrl: `/images/${req.file.filename}`,
   });
-  sauce
-    .save()
+  // Recording new object in the database
+  sauce.save()
     .then((newSauce) => res.status(201).json(newSauce))
     .catch((error) =>
       res.status(400).json({
         error,
       })
     );
+};
+
+//Modify sauce
+
+exports.modifySauce = (req, res, next) => {
+  const sauceObject = req.file ? 
+    //if the picture exist
+      {
+        ...JSON.parse(req.body.sauce),
+        imageUrl: `${req.protocol}://${req.get("host")}/images/${
+          req.file.filename
+        }`,
+      } : { ...req.body };
+  //if the pictures don't exist
+  Sauce.updateOne(
+    { _id: req.params.id },
+    { ...sauceObject, _id: req.params.id }
+  )
+    .then(() => res.status(200).json({ message: "Object modified !" }))
+    .catch((error) => res.status(400).json({ error }));
 };
 
 // Create like or dislike
@@ -120,3 +141,5 @@ exports.likeOrDislike = (req, res, next) => {
       .catch((error) => res.status(400).json({ error }));
   }
 };
+
+
