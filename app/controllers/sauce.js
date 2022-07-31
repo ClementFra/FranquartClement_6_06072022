@@ -59,7 +59,7 @@ exports.createNewSauce = (req, res, next) => {
   // Recording new object in the database
   sauce
     .save()
-    .then((newSauce) => res.status(201).json( sauce ))
+    .then((newSauce) => res.status(201).json( newSauce ))
     .catch((error) =>
       res.status(400).json({
         error,

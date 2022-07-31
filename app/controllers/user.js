@@ -82,3 +82,103 @@ exports.login = (req, res, next) => {
     .catch((error) => res.status(500).json({ error }));
 };
 
+exports.readUser = (req, res, next) => {
+  User.findById(req.auth.userId)
+    .then((user) => {
+      if (!user) {
+        res.status(404).json({
+          error: new Error("User not found!")
+        });
+      } else {
+        user.email = decryptMail(user.email); // decrypts user's email
+        res.status(200).json(user, hateoasLinks(req, user._id));
+      }
+    })
+    .catch((error) => res.status(404).json({
+      error
+    }));
+}
+
+exports.exportData = (req, res, next) => {
+  User.findById(req.auth.userId)
+    .then((user) => {
+      if (!user) {
+        res.status(404).json({
+          error: new Error("User not found!")
+        });
+      } else {
+        user.email = decryptMail(user.email); // decrypts user's email
+        const text = user.toString(); // returns the user object to string format
+        res.attachment("user-data.txt");
+        res.type("txt");
+        return res.status(200).send(text);
+      }
+    })
+    .catch((error) => res.status(404).json({
+      error
+    }));
+}
+
+
+exports.updateUser = (req, res, next) => {
+  User.findById(req.auth.userId)
+    .then((user) => {
+      if (!user) {
+        res.status(404).json({
+          error: new Error("User not found!")
+        });
+      } else {
+        User.findByIdAndUpdate({
+            _id: req.auth.userId
+          }, {
+            ...req.body,
+            email: encryptMail(req.body.email)
+          }, {
+            new: true
+          })
+          .then((userUpdated) => {
+            userUpdated.email = decryptMail(userUpdated.email);
+            res.status(200).json(
+            userUpdated,
+            hateoasLinks(req, userUpdated._id)
+          )})
+          .catch((error) => {
+            res.status(400).json({
+              error: error
+            });
+          });
+      }
+    })
+    .catch((error) => res.status(404).json({
+      error
+    }));
+}
+
+exports.deleteUser = (req, res, next) => {
+  User.findById(req.auth.userId)
+    .then((user) => {
+      if (!user) {
+        res.status(404).json({
+          error: new Error("User not found!")
+        });
+      } else {
+        User.deleteOne({
+            _id: req.auth.userId
+          })
+          .then(() => {
+            res.status(204).json({})
+          })
+          .catch((error) => {
+            res.status(400).json({
+              error: error
+            });
+          });
+      }
+    })
+    .catch((error) => res.status(404).json({
+      error
+    }));
+}
+
+
+
