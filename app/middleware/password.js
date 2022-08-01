@@ -26,11 +26,11 @@ module.exports = (req, res, next) => {
   if (passwordSchema.validate(req.body.password)) {
     next();
   } else {
-    const pwdValidError = passwordSchema.validate(req.body.password, {
+    const pwdError = passwordSchema.validate(req.body.password, {
       details: true,
     });
     return res.status(400).json({
-      error: pwdValidError,
+      error: pwdError,
     });
   }
 };
