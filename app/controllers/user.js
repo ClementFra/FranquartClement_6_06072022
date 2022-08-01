@@ -120,10 +120,10 @@ exports.exportDataUser = (req, res, next) => {
         });
       } else {
         user.email = decryptMail(user.email);
-        const text = user.toString();
+        const userText = user.toString();
         res.attachment("user-data.txt");
         res.type("txt");
-        return res.status(200).send(text);
+        return res.status(200).send(userText);
       }
     })
     .catch((error) =>
