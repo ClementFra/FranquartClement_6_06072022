@@ -6,32 +6,34 @@ require("dotenv").config();
 
 // Encrypt the users mail
 
-function encrypt(data){
-   const encrypted = cryptoJS.AES.encrypt(
-    data, 
-    cryptoJS.enc.Utf8.parse(process.env.SECRET_KEY), 
+function encrypt(data) {
+  const encrypted = cryptoJS.AES.encrypt(
+    data,
+    cryptoJS.enc.Utf8.parse(process.env.SECRET_KEY),
     {
       iv: cryptoJS.enc.Utf8.parse(process.env.IV),
       mode: cryptoJS.mode.ECB,
-      padding: cryptoJS.pad.Pkcs7
-  });
+      padding: cryptoJS.pad.Pkcs7,
+    }
+  );
   return encrypted.toString();
 }
 
 // Decrypt the users mail
 
-function decrypt(data){
-  console.log(data)
+function decrypt(data) {
+  console.log(data);
   const decrypted = cryptoJS.AES.decrypt(
-    data, 
-    cryptoJS.enc.Utf8.parse(process.env.SECRET_KEY), 
+    data,
+    cryptoJS.enc.Utf8.parse(process.env.SECRET_KEY),
     {
       iv: cryptoJS.enc.Utf8.parse(process.env.IV),
       mode: cryptoJS.mode.ECB,
-      padding: cryptoJS.pad.Pkcs7
-  });
-  console.log(decrypted)
-  return decrypted.toString(cryptoJS.enc.Utf8)
+      padding: cryptoJS.pad.Pkcs7,
+    }
+  );
+  console.log(decrypted);
+  return decrypted.toString(cryptoJS.enc.Utf8);
 }
 
 // Register for a new user
@@ -43,17 +45,17 @@ exports.signup = (req, res, next) => {
         email: encrypt(req.body.email),
         password: hash,
       });
-      console.log(user.email)
+      console.log(user.email);
       user
         .save()
-        .then((newUser) =>{
-          console.log(newUser.email)
-          user.email= decrypt(newUser.email)
-          res.status(201).json(newUser)
+        .then((newUser) => {
+          console.log(newUser.email);
+          user.email = decrypt(newUser.email);
+          res.status(201).json(newUser);
         })
         .catch((error) => res.status(400).json({ error }));
     })
-    .catch((error) =>console.log(error));
+    .catch((error) => console.log(error));
 };
 
 // Login user who's is already register
@@ -82,3 +84,121 @@ exports.login = (req, res, next) => {
     .catch((error) => res.status(500).json({ error }));
 };
 
+/** RGDP*/
+
+// Read users
+
+exports.readUser = (req, res, next) => {
+  User.findById(req.auth.userId)
+    .then((user) => {
+      if (!user) {
+        res.status(404).json({
+          error: new Error("User not found!"),
+        });
+      } else {
+        user.email = decryptMail(user.email); 
+        res.status(200).json(user);
+      }
+    })
+    .catch((error) =>
+      res.status(404).json({
+        error,
+      })
+    );
+};
+
+
+
+// Export data user
+
+exports.exportDataUser = (req, res, next) => {
+  User.findById(req.auth.userId)
+    .then((user) => {
+      if (!user) {
+        res.status(404).json({
+          error: new Error("User not found!"),
+        });
+      } else {
+        user.email = decryptMail(user.email);
+        const userText = user.toString();
+        res.attachment("user-data.txt");
+        res.type("txt");
+        return res.status(200).send(userText);
+      }
+    })
+    .catch((error) =>
+      res.status(404).json({
+        error,
+      })
+    );
+};
+
+// Update user 
+
+exports.updateUser = (req, res, next) => {
+  User.findById(req.auth.userId)
+    .then((user) => {
+      if (!user) {
+        res.status(404).json({
+          error: new Error("User not found!"),
+        });
+      } else {
+        User.findByIdAndUpdate(
+          {
+            _id: req.auth.userId,
+          },
+          {
+            ...req.body,
+            email: encryptMail(req.body.email),
+          },
+          {
+            new: true,
+          }
+        )
+          .then((userUpdated) => {
+            userUpdated.email = decryptMail(userUpdated.email);
+            res.status(200).json(userUpdated);
+          })
+          .catch((error) => {
+            res.status(400).json({
+              error: error,
+            });
+          });
+      }
+    })
+    .catch((error) =>
+      res.status(404).json({
+        error,
+      })
+    );
+};
+
+// Delete user
+
+exports.deleteUser = (req, res, next) => {
+  User.findById(req.auth.userId)
+    .then((user) => {
+      if (!user) {
+        res.status(404).json({
+          error: new Error("User not found!"),
+        });
+      } else {
+        User.deleteOne({
+          _id: req.auth.userId,
+        })
+          .then(() => {
+            res.status(204).json(user);
+          })
+          .catch((error) => {
+            res.status(400).json({
+              error: error,
+            });
+          });
+      }
+    })
+    .catch((error) =>
+      res.status(404).json({
+        error,
+      })
+    );
+};

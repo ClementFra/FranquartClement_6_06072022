@@ -39,6 +39,11 @@ exports.readAllSauces = (req, res, next) => {
 // Create and add a new sauce in the database
 
 exports.createNewSauce = (req, res, next) => {
+  if (!req.file) {
+    return res.status(422).json({
+      message: "Image not found"
+    });
+  }
   if (!req.body.sauce) {
     return res.status(422).json({
       message: "Sauce not found !",
@@ -54,7 +59,7 @@ exports.createNewSauce = (req, res, next) => {
   // Recording new object in the database
   sauce
     .save()
-    .then((newSauce) => res.status(201).json( sauce ))
+    .then((newSauce) => res.status(201).json( newSauce ))
     .catch((error) =>
       res.status(400).json({
         error,
