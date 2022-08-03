@@ -71,13 +71,16 @@ exports.login = (req, res, next) => {
           if (!valid) {
             return res.status(401).json({ message: "Incorrect password !" });
           }
-          res.status(200).json({
-            userId: user._id,
-            // Creating a token for the session
-            token: jwt.sign({ userId: user._id }, process.env.TOKEN_SECRET, {
-              expiresIn: "24h",
-            }),
-          });
+          res.status(200).json(
+            {
+              userId: user._id,
+              // Creating a token for the session
+              token: jwt.sign({ userId: user._id }, process.env.TOKEN_SECRET, {
+                expiresIn: "24h",
+              }),
+            },
+            hateoasLinks(req, user._id)
+          );
         })
         .catch((error) => res.status(500).json({ error }));
     })
@@ -97,7 +100,7 @@ exports.readUser = (req, res, next) => {
         });
       } else {
         user.email = decryptMail(user.email);
-        res.status(200).json(user);
+        res.status(200).json(user, hateoasLinks(req, user._id));
       }
     })
     .catch((error) =>
@@ -155,7 +158,9 @@ exports.updateUser = (req, res, next) => {
         )
           .then((userUpdated) => {
             userUpdated.email = decryptMail(userUpdated.email);
-            res.status(200).json(userUpdated);
+            res
+              .status(200)
+              .json(userUpdated, hateoasLinks(req, userUpdated._id));
           })
           .catch((error) => {
             res.status(400).json({
@@ -199,4 +204,53 @@ exports.deleteUser = (req, res, next) => {
         error,
       })
     );
+};
+// Create hateoas links
+
+const hateoasLinks = (req, id) => {
+  const URI = `${req.protocol}://${req.get("host") + "/api/auth/"}`;
+  return [
+    {
+      rel: "signup",
+      title: "Signup",
+      href: URI + "signup",
+      method: "POST",
+    },
+    {
+      rel: "login",
+      title: "Login",
+      href: URI + "login",
+      method: "POST",
+    },
+    {
+      rel: "read",
+      title: "Read",
+      href: URI,
+      method: "GET",
+    },
+    {
+      rel: "export",
+      title: "Export",
+      href: URI + "export",
+      method: "GET",
+    },
+    {
+      rel: "update",
+      title: "Update",
+      href: URI,
+      method: "PUT",
+    },
+    {
+      rel: "delete",
+      title: "Delete",
+      href: URI,
+      method: "DELETE",
+    },
+    {
+      rel: "report",
+      title: "Report",
+      href: URI + id,
+      method: "POST",
+    },
+  ];
 };
