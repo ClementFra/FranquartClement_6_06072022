@@ -99,7 +99,7 @@ exports.readUser = (req, res, next) => {
           error: new Error("User not found!"),
         });
       } else {
-        user.email = decryptMail(user.email);
+        user.email = decrypt(user.email);
         res.status(200).json(user, hateoasLinks(req, user._id));
       }
     })
@@ -120,7 +120,7 @@ exports.exportDataUser = (req, res, next) => {
           error: new Error("User not found!"),
         });
       } else {
-        user.email = decryptMail(user.email);
+        user.email = decrypt(user.email);
         const userText = user.toString();
         res.attachment("user-data.txt");
         res.type("txt");
@@ -150,14 +150,14 @@ exports.updateUser = (req, res, next) => {
           },
           {
             ...req.body,
-            email: encryptMail(req.body.email),
+            email: encrypt(req.body.email),
           },
           {
             new: true,
           }
         )
           .then((userUpdated) => {
-            userUpdated.email = decryptMail(userUpdated.email);
+            userUpdated.email = decrypt(userUpdated.email);
             res
               .status(200)
               .json(userUpdated, hateoasLinks(req, userUpdated._id));
