@@ -246,11 +246,5 @@ const hateoasLinks = (req, id) => {
       href: URI,
       method: "DELETE",
     },
-    {
-      rel: "report",
-      title: "Report",
-      href: URI + id,
-      method: "POST",
-    },
   ];
 };
