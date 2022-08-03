@@ -6,6 +6,12 @@ require("dotenv").config();
 const router = require("./app/routes/index");
 const hateoasLinker = require('express-hateoas-links');
 
+// Security
+
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
+const speedLimiter = require("./app/middleware/speed-limiter");
+
 // Settings corps
 const app = express();
 var corsOptions = {
@@ -18,6 +24,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api", router)
 app.use(hateoasLinker);
+
+// Security app
+
+app.use(mongoSanitize());
+app.use(helmet());
+app.use(speedLimiter);
+
 
 // Port listener for requests
 const PORT = process.env.PORT || 3000;
