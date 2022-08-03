@@ -96,7 +96,7 @@ exports.readUser = (req, res, next) => {
           error: new Error("User not found!"),
         });
       } else {
-        user.email = decryptMail(user.email); 
+        user.email = decryptMail(user.email);
         res.status(200).json(user);
       }
     })
@@ -106,8 +106,6 @@ exports.readUser = (req, res, next) => {
       })
     );
 };
-
-
 
 // Export data user
 
@@ -133,7 +131,7 @@ exports.exportDataUser = (req, res, next) => {
     );
 };
 
-// Update user 
+// Update user
 
 exports.updateUser = (req, res, next) => {
   User.findById(req.auth.userId)

@@ -1,7 +1,7 @@
 const passwordValidator = require("password-validator");
 
 // Create a schema
-const schema = new passwordValidator();
+const passwordSchema = new passwordValidator();
 
 // Add properties to it
 passwordSchema
@@ -31,6 +31,6 @@ module.exports = (req, res, next) => {
     });
     return res.status(400).json({
       error: pwdError,
-    });
+    })
   }
-};
+}

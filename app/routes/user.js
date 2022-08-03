@@ -2,12 +2,14 @@ const express = require("express");
 const router = express.Router();
 const userCtrl = require("../controllers/user");
 const auth = require('../middleware/auth');
-const password = require("../middleware/password");
+const pswd = require("../middleware/password");
+const rateLter = require("../middleware/rate-limiter");
+
 
 // Router post
 
-router.post("/signup", userCtrl.signup);
-router.post("/login", userCtrl.login);
+router.post("/signup",pswd, userCtrl.signup);
+router.post("/login",rateLter, userCtrl.login);
 
 // Router get
 
