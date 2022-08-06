@@ -95,8 +95,8 @@ exports.readUser = (req, res, next) => {
   User.findById(req.auth.userId)
     .then((user) => {
       if (!user) {
-        res.status(404).json({
-          error: new Error("User not found!"),
+        res.status(401).json({
+          message: "User not found!",
         });
       } else {
         user.email = decrypt(user.email);
@@ -104,7 +104,7 @@ exports.readUser = (req, res, next) => {
       }
     })
     .catch((error) =>
-      res.status(404).json({
+      res.status(500).json({
         error,
       })
     );
@@ -117,7 +117,7 @@ exports.exportDataUser = (req, res, next) => {
     .then((user) => {
       if (!user) {
         res.status(404).json({
-          error: new Error("User not found!"),
+          message: "User not found!",
         });
       } else {
         user.email = decrypt(user.email);
@@ -128,7 +128,7 @@ exports.exportDataUser = (req, res, next) => {
       }
     })
     .catch((error) =>
-      res.status(404).json({
+      res.status(500).json({
         error,
       })
     );
@@ -140,8 +140,8 @@ exports.updateUser = (req, res, next) => {
   User.findById(req.auth.userId)
     .then((user) => {
       if (!user) {
-        res.status(404).json({
-          error: new Error("User not found!"),
+        res.status(401).json({
+          message: "User not found!" ,
         });
       } else {
         User.findByIdAndUpdate(
@@ -156,11 +156,11 @@ exports.updateUser = (req, res, next) => {
             new: true,
           }
         )
-          .then((userUpdated) => {
-            userUpdated.email = decrypt(userUpdated.email);
+          .then((updateUser) => {
+            userUpdated.email = decrypt(updateUser.email);
             res
               .status(200)
-              .json(userUpdated, hateoasLinks(req, userUpdated._id));
+              .json(updateUser, hateoasLinks(req, updateUser._id));
           })
           .catch((error) => {
             res.status(400).json({
@@ -170,7 +170,7 @@ exports.updateUser = (req, res, next) => {
       }
     })
     .catch((error) =>
-      res.status(404).json({
+      res.status(500).json({
         error,
       })
     );
@@ -183,7 +183,7 @@ exports.deleteUser = (req, res, next) => {
     .then((user) => {
       if (!user) {
         res.status(404).json({
-          error: new Error("User not found!"),
+          message: "User not found!",
         });
       } else {
         User.deleteOne({
@@ -207,7 +207,7 @@ exports.deleteUser = (req, res, next) => {
 };
 // Create hateoas links
 
-const hateoasLinks = (req, id) => {
+const hateoasLinks = (req) => {
   const URI = `${req.protocol}://${req.get("host") + "/api/auth/"}`;
   return [
     {
