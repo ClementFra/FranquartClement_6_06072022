@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/ClementFra/FranquartClement_P6_06072022#readme",
   "dependencies": {
+    "audit": "^0.0.6",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
@@ -26,7 +27,7 @@
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^6.5.1",
     "express-slow-down": "^1.4.0",
-    "fix": "^0.0.6",
+    "fix": "^0.0.3",
     "fs": "^0.0.1-security",
     "helmet": "^5.1.1",
     "jsonwebtoken": "^8.5.1",

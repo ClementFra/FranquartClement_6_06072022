@@ -141,7 +141,7 @@ exports.updateUser = (req, res, next) => {
     .then((user) => {
       if (!user) {
         res.status(401).json({
-          message: "User not found!" ,
+          message: "User not found!",
         });
       } else {
         User.findByIdAndUpdate(
@@ -158,9 +158,7 @@ exports.updateUser = (req, res, next) => {
         )
           .then((updateUser) => {
             updateUser.email = decrypt(updateUser.email);
-            res
-              .status(200)
-              .json(updateUser, hateoasLinks(req, updateUser._id));
+            res.status(200).json(updateUser, hateoasLinks(req, updateUser._id));
           })
           .catch((error) => {
             res.status(400).json({
