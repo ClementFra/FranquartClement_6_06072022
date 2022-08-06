@@ -157,7 +157,7 @@ exports.updateUser = (req, res, next) => {
           }
         )
           .then((updateUser) => {
-            userUpdated.email = decrypt(updateUser.email);
+            updateUser.email = decrypt(updateUser.email);
             res
               .status(200)
               .json(updateUser, hateoasLinks(req, updateUser._id));
