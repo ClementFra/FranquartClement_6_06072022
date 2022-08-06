@@ -95,7 +95,7 @@ exports.readUser = (req, res, next) => {
   User.findById(req.auth.userId)
     .then((user) => {
       if (!user) {
-        res.status(401).json({
+        res.status(404).json({
           message: "User not found!",
         });
       } else {
@@ -104,7 +104,7 @@ exports.readUser = (req, res, next) => {
       }
     })
     .catch((error) =>
-      res.status(500).json({
+      res.status(404).json({
         error,
       })
     );

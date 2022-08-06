@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 require("./config/db.config");
 require("dotenv").config();
+const app = express();
 const router = require("./app/routes/index");
 const hateoasLinker = require("express-hateoas-links");
 
@@ -16,9 +17,22 @@ const speedLimiter = require("./app/middleware/speed-limiter");
 
 const path = require("path");
 
+// Setting headers
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+  );
+  next();
+});
+
 
 // Settings cors
-const app = express();
 var corsOptions = {
   origin: "http://localhost:4200/",
 };
