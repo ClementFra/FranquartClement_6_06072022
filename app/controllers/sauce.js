@@ -7,7 +7,7 @@ exports.readSingleSauce = (req, res, next) => {
   Sauce.findById(req.params.id)
     .then((sauce) => {
       sauce.imageUrl = `${req.protocol}://${req.get("host")}${sauce.imageUrl}`;
-      res.status(200).json(sauce, hateoasLinks(req, sauce._id));
+      res.status(200).json(sauce);
     })
     .catch((error) =>
       res.status(404).json({
@@ -51,7 +51,7 @@ exports.createNewSauce = (req, res, next) => {
   sauce
     .save()
     .then((newSauce) =>
-      res.status(201).json(newSauce, hateoasLinks(req, newSauce._id))
+      res.status(201).json(newSauce)
     )
     .catch((error) =>
       res.status(400).json({
@@ -120,7 +120,7 @@ exports.likeOrDislike = (req, res, next) => {
           if (!sauce.userDisliked.includes(userId)) {
             Sauce.updateOne({ _id: req.params.id }, toChange)
               .then((newSauce) =>
-                res.status(200).json(newSauce, hateoasLinks(req, newSauce._id))
+                res.status(200).json(newSauce)
               )
               .catch((error) =>
                 res.status(400).json({
@@ -139,7 +139,7 @@ exports.likeOrDislike = (req, res, next) => {
               $pull: { usersliked: userId, userDisliked: userId },
             }
               .then((newSauce) =>
-                res.status(200).json(newSauce, hateoasLinks(req, newSauce._id))
+                res.status(200).json(newSauce)
               )
               .catch((error) =>
                 res.status(400).json({
@@ -168,7 +168,7 @@ exports.likeOrDislike = (req, res, next) => {
               $pull: { userDisliked: userId },
             }
               .then((newSauce) =>
-                res.status(200).json(newSauce, hateoasLinks(req, newSauce._id))
+                res.status(200).json(newSauce)
               )
               .catch((error) =>
                 res.status(400).json({
@@ -192,7 +192,7 @@ exports.likeOrDislike = (req, res, next) => {
           if (!sauce.userliked.includes(userId)) {
             Sauce.updateOne({ _id: req.params.id }, toChange)
               .then((newSauce) =>
-                res.status(200).json(newSauce, hateoasLinks(req, newSauce._id))
+                res.status(200).json(newSauce)
               )
               .catch((error) =>
                 res.status(400).json({

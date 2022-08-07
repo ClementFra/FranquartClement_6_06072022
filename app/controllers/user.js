@@ -97,7 +97,6 @@ exports.readUser = (req, res, next) => {
           message: "User not found!",
         });
       } else {
-
         user.email = decrypt(user.email);
         user.links = hateoasLinks(req, user._id);
         res.status(200).json(user);
