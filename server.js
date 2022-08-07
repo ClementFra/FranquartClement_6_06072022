@@ -17,7 +17,7 @@ const speedLimiter = require("./app/middleware/speed-limiter");
 
 const path = require("path");
 
-// Setting headers
+// Setting
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(

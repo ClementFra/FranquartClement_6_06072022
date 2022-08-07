@@ -214,3 +214,47 @@ exports.likeOrDislike = (req, res, next) => {
     })
     .catch((error) => res.status(404).json({ error }));
 };
+
+// Hateoas for sauces
+
+const hateoasLinks = (req, id) => {
+  const URI = `${req.protocol}://${req.get("host") + "/api/sauces/"}`;
+  return [
+    {
+      rel: "readSingle",
+      title: "ReadSingle",
+      href: URI + id,
+      method: "GET"
+    },
+    {
+      rel: "readAll",
+      title: "readAll",
+      href: URI,
+      method: "GET"
+    },
+    {
+      rel: "create",
+      title: "Create",
+      href: URI,
+      method: "POST"
+    },
+    {
+      rel: "likeOrDislike",
+      title: "likeOrDislike",
+      href: URI + id + "/like",
+      method: "POST"
+    },
+    {
+      rel: "modify",
+      title: "modify",
+      href: URI + id,
+      method: "PUT"
+    },
+    {
+      rel: "delete",
+      title: "delete",
+      href: URI + id,
+      method: "DELETE"
+    }
+  ]
+}

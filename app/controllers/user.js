@@ -22,7 +22,6 @@ function encrypt(data) {
 // Decrypt the users mail
 
 function decrypt(data) {
-  console.log(data);
   const decrypted = cryptoJS.AES.decrypt(
     data,
     cryptoJS.enc.Utf8.parse(process.env.SECRET_KEY),
@@ -32,7 +31,6 @@ function decrypt(data) {
       padding: cryptoJS.pad.Pkcs7,
     }
   );
-  console.log(decrypted);
   return decrypted.toString(cryptoJS.enc.Utf8);
 }
 
@@ -99,14 +97,14 @@ exports.readUser = (req, res, next) => {
           message: "User not found!",
         });
       } else {
+
         user.email = decrypt(user.email);
-        res.status(200).json(user, hateoasLinks(req, user._id));
+        user.links = hateoasLinks(req, user._id);
+        res.status(200).json(user);
       }
     })
     .catch((error) =>
-      res.status(404).json({
-        error,
-      })
+      console.log(error)
     );
 };
 
@@ -158,7 +156,8 @@ exports.updateUser = (req, res, next) => {
         )
           .then((updateUser) => {
             updateUser.email = decrypt(updateUser.email);
-            res.status(200).json(updateUser, hateoasLinks(req, updateUser._id));
+            updateUser.links = hateoasLinks(req, updateUser._id);
+            res.status(200).json(updateUser);
           })
           .catch((error) => {
             res.status(400).json({
@@ -203,21 +202,22 @@ exports.deleteUser = (req, res, next) => {
       })
     );
 };
+
 // Create hateoas links
 
-const hateoasLinks = (req) => {
+const hateoasLinks = (req, id ) => {
   const URI = `${req.protocol}://${req.get("host") + "/api/auth/"}`;
   return [
     {
       rel: "signup",
       title: "Signup",
-      href: URI + "signup",
+      href: URI + "/signup",
       method: "POST",
     },
     {
       rel: "login",
       title: "Login",
-      href: URI + "login",
+      href: URI + "/login",
       method: "POST",
     },
     {
@@ -240,7 +240,7 @@ const hateoasLinks = (req) => {
     },
     {
       rel: "delete",
-      title: "Delete",
+      title: "Delete"+ id,
       href: URI,
       method: "DELETE",
     },

@@ -10,7 +10,6 @@ module.exports = (req, res, next) => {
     req.auth = {
       userId: userId,
     };
-    next();
     if (req.body.userId && req.body.userId !== userId) {
       res.status(403).json({ error: "User ID invalid" });
     } else {
