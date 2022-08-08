@@ -7,6 +7,7 @@ exports.readSingleSauce = (req, res, next) => {
   Sauce.findById(req.params.id)
     .then((sauce) => {
       sauce.imageUrl = `${req.protocol}://${req.get("host")}${sauce.imageUrl}`;
+      sauce.links= hateoasLinks(req,sauce._id);
       res.status(200).json(sauce);
     })
     .catch((error) =>
@@ -25,7 +26,8 @@ exports.readAllSauces = (req, res, next) => {
         sauce.imageUrl = `${req.protocol}://${req.get("host")}${
           sauce.imageUrl
         }`;
-        return { ...sauce._doc };
+        sauce.links = hateoasLinks(req, sauce._id);
+        return { ...sauce._doc ,hateoasLinks };
       });
       res.status(200).json(sauces);
     })
@@ -93,7 +95,8 @@ exports.modifySauce = (req, res, next) => {
           new: true,
         }
       )
-        .then((sauceUpdated) => res.status(200).json(sauceUpdated))
+        .then((sauceUpdated) =>
+         res.status(200).json(sauceUpdated))
         .catch((error) => res.status(400).json({error}));
     }
   });

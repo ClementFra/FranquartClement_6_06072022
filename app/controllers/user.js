@@ -49,6 +49,7 @@ exports.signup = (req, res, next) => {
         .then((newUser) => {
           console.log(newUser.email);
           user.email = decrypt(newUser.email);
+          newUser.links= hateoasLinks(req,newUser._id);
           res.status(201).json(newUser);
         })
         .catch((error) => res.status(400).json({ error }));
