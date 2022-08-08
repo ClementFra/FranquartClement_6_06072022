@@ -50,9 +50,7 @@ exports.createNewSauce = (req, res, next) => {
   // Recording new object in the database
   sauce
     .save()
-    .then((newSauce) =>
-      res.status(201).json(newSauce)
-    )
+    .then((newSauce) => res.status(201).json(newSauce))
     .catch((error) =>
       res.status(400).json({
         error,
@@ -63,21 +61,43 @@ exports.createNewSauce = (req, res, next) => {
 //Modify sauce
 
 exports.modifySauce = (req, res, next) => {
-  const sauceObject = req.file
-    ? // If the picture exist
-      {
-        ...JSON.parse(req.body.sauce),
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${
-          req.file.filename
-        }`,
+  Sauce.findById(req.params.id).then((sauce) => {
+    if (sauce.userId !== req.auth.userId) {
+      res.status(403).json({
+        // If the user is not the creator => unauthorized message
+        message: "Unauthorized request!",
+      });
+    } else {
+      const sauceObject = req.file
+        ? {
+            ...JSON.parse(req.body.sauce),
+            imageUrl: `/images/${req.file.filename}`,
+          } : {...req.body }; 
+      const filename = sauce.imageUrl.split("/images/")[1];
+      try {
+        if (sauceObject.imageUrl) {
+          //Delete old image
+          fs.unlinkSync(`images/${filename}`);
+        }
+      } catch (error) {
+        console.log(error);
       }
-    : { ...req.body };
-  //If the pictures don't exist
-  Sauce.updateOne({ _id: req.params.id }, { ...sauceObject })
-    .then((newSauce) => res.status(200).json(newSauce))
-    .catch((error) => res.status(400).json({ error }));
+      Sauce.findByIdAndUpdate(
+        {
+          _id: req.params.id,
+        },
+        {
+          ...sauceObject,
+          _id: req.params.id,
+        }, {
+          new: true,
+        }
+      )
+        .then((sauceUpdated) => res.status(200).json(sauceUpdated))
+        .catch((error) => res.status(400).json({error}));
+    }
+  });
 };
-
 // Delete sauce
 
 exports.deleteSauce = (req, res, next) => {
@@ -119,9 +139,7 @@ exports.likeOrDislike = (req, res, next) => {
           }
           if (!sauce.userDisliked.includes(userId)) {
             Sauce.updateOne({ _id: req.params.id }, toChange)
-              .then((newSauce) =>
-                res.status(200).json(newSauce)
-              )
+              .then((newSauce) => res.status(200).json(newSauce))
               .catch((error) =>
                 res.status(400).json({
                   error,
@@ -138,9 +156,7 @@ exports.likeOrDislike = (req, res, next) => {
               $inc: { dislikes: -1, likes: -1 },
               $pull: { usersliked: userId, userDisliked: userId },
             }
-              .then((newSauce) =>
-                res.status(200).json(newSauce)
-              )
+              .then((newSauce) => res.status(200).json(newSauce))
               .catch((error) =>
                 res.status(400).json({
                   error,
@@ -167,9 +183,7 @@ exports.likeOrDislike = (req, res, next) => {
               $inc: { dislikes: -1 },
               $pull: { userDisliked: userId },
             }
-              .then((newSauce) =>
-                res.status(200).json(newSauce)
-              )
+              .then((newSauce) => res.status(200).json(newSauce))
               .catch((error) =>
                 res.status(400).json({
                   error,
@@ -191,9 +205,7 @@ exports.likeOrDislike = (req, res, next) => {
           }
           if (!sauce.userliked.includes(userId)) {
             Sauce.updateOne({ _id: req.params.id }, toChange)
-              .then((newSauce) =>
-                res.status(200).json(newSauce)
-              )
+              .then((newSauce) => res.status(200).json(newSauce))
               .catch((error) =>
                 res.status(400).json({
                   error,
@@ -215,37 +227,37 @@ const hateoasLinks = (req, id) => {
       rel: "readSingle",
       title: "ReadSingle",
       href: URI + id,
-      method: "GET"
+      method: "GET",
     },
     {
       rel: "readAll",
       title: "readAll",
       href: URI,
-      method: "GET"
+      method: "GET",
     },
     {
       rel: "create",
       title: "Create",
       href: URI,
-      method: "POST"
+      method: "POST",
     },
     {
       rel: "likeOrDislike",
       title: "likeOrDislike",
       href: URI + id + "/like",
-      method: "POST"
+      method: "POST",
     },
     {
       rel: "modify",
       title: "modify",
       href: URI + id,
-      method: "PUT"
+      method: "PUT",
     },
     {
       rel: "delete",
       title: "delete",
       href: URI + id,
-      method: "DELETE"
-    }
-  ]
-}
+      method: "DELETE",
+    },
+  ];
+};
