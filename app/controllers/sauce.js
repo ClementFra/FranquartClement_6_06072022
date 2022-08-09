@@ -139,7 +139,7 @@ exports.likeOrDislike = (req, res, next) => {
           }
           if (!sauce.userDisliked.includes(userId)) {
             Sauce.updateOne({ _id: req.params.id }, toChange)
-              .then((newSauce) => res.status(200).json(newSauce)) // Request ok
+              .then((newSauce) => res.status(200).json(newSauce))// Request ok
               .catch((error) => res.status(400).json({error}) // Error bad request
               );
           }
@@ -153,7 +153,7 @@ exports.likeOrDislike = (req, res, next) => {
               $inc: { dislikes: -1, likes: -1 },
               $pull: { usersliked: userId, userDisliked: userId },
             }
-              .then((newSauce) => res.status(200).json(newSauce)) 
+              .then((newSauce) => res.status(200).json(newSauce))
               .catch((error) =>
                 res.status(400).json({
                   error,
