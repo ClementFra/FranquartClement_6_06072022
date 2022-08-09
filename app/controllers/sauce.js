@@ -2,6 +2,7 @@
 const Sauce = require("../models/sauce");
 // File system
 const fs = require("fs");
+const sauce = require("../models/sauce");
 
 /*****************************************************************
  *****************  READ SAUCE BY  ID     ************************
@@ -51,7 +52,9 @@ exports.createNewSauce = (req, res, next) => {
   // Create new sauce
   sauce
     .save()
-    .then((newSauce) => res.status(201).json(newSauce)) // Request ok  sauce created
+    .then(() =>
+     Sauce.link= hateoasLinks(req, Sauce._id),
+     res.status(201).json(Sauce)) // Request ok  sauce created
     .catch((error) =>res.status(400).json({error}) // Error bad request
     );
 };
@@ -90,8 +93,9 @@ exports.modifySauce = (req, res, next) => {
           new: true,
         }
       )
-        .then((sauceUpdated) =>
-        res.status(200).json(sauceUpdated)) // Request ok
+        .then((sauce) =>
+        sauce.links= hateoasLinks(req, sauce._id),
+        res.status(200).json(sauce)) // Request ok
         .catch((error) => res.status(400).json({error})); // Error bad request
     }
   });
@@ -139,7 +143,9 @@ exports.likeOrDislike = (req, res, next) => {
           }
           if (!sauce.userDisliked.includes(userId)) {
             Sauce.updateOne({ _id: req.params.id }, toChange)
-              .then((newSauce) => res.status(200).json(newSauce))// Request ok
+              .then((newSauce) =>
+              newSauce.links= hateoasLinks(req,sauce._id),
+               res.status(200).json(newSauce))// Request ok
               .catch((error) => res.status(400).json({error}) // Error bad request
               );
           }
@@ -153,7 +159,9 @@ exports.likeOrDislike = (req, res, next) => {
               $inc: { dislikes: -1, likes: -1 },
               $pull: { usersliked: userId, userDisliked: userId },
             }
-              .then((newSauce) => res.status(200).json(newSauce))
+              .then((newSauce) =>
+              newSauce.links= hateoasLinks(req,sauce._id),
+              res.status(200).json(newSauce))
               .catch((error) =>
                 res.status(400).json({
                   error,
@@ -168,7 +176,9 @@ exports.likeOrDislike = (req, res, next) => {
                 $pull: { usersliked: userId },
               })
             )
-              .then((newSauce) => res.status(200).json(newSauce))
+              .then((newSauce) =>
+              newSauce.links= hateoasLinks(req,sauce._id),
+              res.status(200).json(newSauce))
               .catch((error) =>
                 res.status(400).json({
                   error,
@@ -180,7 +190,9 @@ exports.likeOrDislike = (req, res, next) => {
               $inc: { dislikes: -1 },
               $pull: { userDisliked: userId },
             }
-              .then((newSauce) => res.status(200).json(newSauce))
+              .then((newSauce) =>
+              newSauce.links= hateoasLinks(req,sauce._id),
+              res.status(200).json(newSauce))
               .catch((error) =>
                 res.status(400).json({
                   error,
@@ -202,7 +214,9 @@ exports.likeOrDislike = (req, res, next) => {
           }
           if (!sauce.userliked.includes(userId)) {
             Sauce.updateOne({ _id: req.params.id }, toChange)
-              .then((newSauce) => res.status(200).json(newSauce))
+              .then((newSauce) =>
+              newSauce.links= hateoasLinks(req,sauce._id),
+              res.status(200).json(newSauce))
               .catch((error) =>
                 res.status(400).json({
                   error,
