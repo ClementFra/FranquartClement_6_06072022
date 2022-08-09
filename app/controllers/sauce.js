@@ -96,7 +96,7 @@ exports.modifySauce = (req, res, next) => {
         }
       )
         .then((sauceUpdated) =>
-         res.status(200).json(sauceUpdated))
+        res.status(200).json(sauceUpdated))
         .catch((error) => res.status(400).json({error}));
     }
   });
