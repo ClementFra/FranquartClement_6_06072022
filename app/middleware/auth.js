@@ -11,7 +11,7 @@ module.exports = (req, res, next) => {
       userId: userId,
     };
     if (req.body.userId && req.body.userId !== userId) {
-      res.status(403).json({ error: "User ID invalid" });
+      res.status(403).json({ error: "User ID invalid" }); // If the user don't match with the token
     } else {
       next();
     }
