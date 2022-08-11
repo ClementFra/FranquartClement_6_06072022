@@ -53,8 +53,11 @@ exports.signup = (req, res, next) => {
         .then((newUser) => {
           console.log(newUser.email);
           user.email = decrypt(newUser.email);
-          newUser.links= hateoasLinks(req,newUser._id);
-          res.status(201).json(newUser); // Create the user
+          const newUserSend= {
+            ...user._doc,
+            "links":hateoasLinks(req, user._id)
+          }
+          res.status(201).json(newUserSend); // Create the user
         })
         .catch((error) => res.status(400).json({ error })); // Error bad request
     })
@@ -78,14 +81,17 @@ exports.login = (req, res, next) => {
           if (!valid) {
             return res.status(401).json({ message: "Incorrect password !" }); // Error Unauthorized
           }
+          const userSend= {
+            ...user._doc,
+            "links":hateoasLinks(req, user._id)
+          }
           res.status(200).json({ // Request ok
             userId: user._id,
             token: jwt.sign({ userId: user._id }, process.env.TOKEN_SECRET, {
               expiresIn: "24h",
             }),
-            user: user,
+            userSend,
           });
-          hateoasLinks(req, user._id);
         })
         .catch((error) => res.status(500).json({ error })); // Internal Error Server
     })
@@ -99,13 +105,14 @@ exports.readUser = (req, res, next) => {
   User.findById(req.auth.userId)
     .then((user) => {
       if (!user) {
-        res.status(404).json({
-          message: "User not found!", // Error not found
-        });
+        res.status(404).json({message: "User not found!"}); // Error not found
       } else {
         user.email = decrypt(user.email);
-        user.links = hateoasLinks(req, user._id);
-        res.status(200).json(user); // Request ok
+        const userSend= {
+          ...user._doc,
+          "links":hateoasLinks(req, user._id)
+        }
+        res.status(200).json(userSend); // Request ok
       }
     })
     .catch((error) =>console.log(error));
@@ -139,38 +146,32 @@ exports.exportDataUser = (req, res, next) => {
  *****************************************************************/
 exports.updateUser = (req, res, next) => {
   User.findById(req.auth.userId)
-    .then((user) => {
-      if (!user) {
-        res.status(404).json({
-          message: "User not found!"}); // Error not found
-      } else {
-        User.findByIdAndUpdate(
-          {
-            _id: req.auth.userId,
-          },
-          {
-            ...req.body,
-            email: encrypt(req.body.email),
-          },
-          {
-            new: true,
-          }
-        )
-          .then((updateUser) => {
-            updateUser.email = decrypt(updateUser.email);
-            updateUser.links = hateoasLinks(req, updateUser._id);
-            res.status(200).json(updateUser);
-          })
-          .catch((error) => {
-            res.status(400).json({error});
-          });
+  .then(async (user) => {
+    if (!user) {
+      res.status(404).json({ message: "user not found" }); // Error not found
+    } else {
+      const update = {};
+      if (req.body.email) {
+        update.email = encrypt(req.body.email);
       }
-    })
-    .catch((error) =>
-      res.status(500).json({error}) // Internal Error Server
-    );
+      if (req.body.password) {
+        const hash = await bcrypt.hash(req.body.password, 10);
+        update.password = hash;
+      }
+      // Update user new info in database
+      User.findByIdAndUpdate({ _id: req.auth.userId }, update)
+        .then((userUpdate) => {
+          const userSend = {
+            ...user._doc,
+              "links":hateoasLinks(req, userUpdate._id)
+            };
+          userUpdate.email = decrypt(userUpdate.email);
+          res.status(200).json(userSend); // Request ok
+        })
+    }
+  })
+  .catch((error) => res.status(500).json(error)); // Internal Error Server
 };
-
 /*****************************************************************
  *****************     DELETE THE USER       *********************
  *****************************************************************/
@@ -178,14 +179,13 @@ exports.deleteUser = (req, res, next) => {
   User.findById(req.auth.userId) // Find user and delete
     .then((user) => {
       if (!user) {
-        res.status(404).json({
-          message: "User not found!"}); // Error not found
+        res.status(404).json({message: "User not found!"}); // Error not found
       } else {
         User.deleteOne({
           _id: req.auth.userId,
         })
           .then(() => {
-            res.status(204).json(user); 
+            res.status(204).send(); 
           })
           .catch((error) => {
             res.status(400).json({error});

@@ -17,6 +17,7 @@ const speedLimiter = require("./app/middleware/speed-limiter");
 
 const path = require("path");
 
+
 // Setting
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -34,7 +35,7 @@ app.use((req, res, next) => {
 
 // Settings cors
 var corsOptions = {
-  origin: "http://localhost:4200/",
+  origin: "http://localhost:4200",
 };
 
 // Middleware corps

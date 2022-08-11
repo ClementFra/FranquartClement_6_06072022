@@ -10,11 +10,14 @@ exports.readSingleSauce = (req, res, next) => {
   Sauce.findById(req.params.id) // Find the sauce in database
     .then((sauce) => {
       sauce.imageUrl = `${req.protocol}://${req.get("host")}${sauce.imageUrl}`; // Add image URL
-      sauce.links= hateoasLinks(req,sauce._id);
-      res.status(200).json(sauce); // Request ok
+      const sauceSend = {
+        ...sauce._doc,
+        "link": hateoasLinks(req,sauce._id),
+      }
+      res.status(200).json(sauceSend); // Request ok
     })
-    .catch((error) =>
-      res.status(404).json({error}) // Error not found
+    .catch(
+      (error) => res.status(404).json({ error }) // Error not found
     );
 };
 
@@ -25,14 +28,15 @@ exports.readAllSauces = (req, res, next) => {
   Sauce.find()
     .then((sauces) => {
       sauces = sauces.map((sauce) => {
-        sauce.imageUrl = `${req.protocol}://${req.get("host")}${sauce.imageUrl}`; // Add image URL
-        sauce.links = hateoasLinks(req, sauce._id);
-        return { ...sauce._doc ,hateoasLinks };
+        sauce.imageUrl = `${req.protocol}://${req.get("host")}${
+          sauce.imageUrl
+        }`; // Add image URL
+        return { ...sauce.toObject() };
       });
       res.status(200).json(sauces); // Request ok
     })
-    .catch((error) =>
-      res.status(400).json({error}) // Error not found
+    .catch(
+      (error) => res.status(400).json({ error }) // Error not found
     );
 };
 
@@ -40,6 +44,16 @@ exports.readAllSauces = (req, res, next) => {
  *****************    CREATE NEW SAUCE       *********************
  *****************************************************************/
 exports.createNewSauce = (req, res, next) => {
+  if (!req.file) {
+    return res.status(422).json({
+      message: "Image not found"
+    });
+  }
+  if (!req.body.sauce) {
+    return res.status(422).json({
+      message: "Sauce not found !",
+    });
+  }
   // Creation new model sauce
   const sauceObject = JSON.parse(req.body.sauce); // Get the sauce object
   delete sauceObject._id; // Delete the id
@@ -51,10 +65,14 @@ exports.createNewSauce = (req, res, next) => {
   // Create new sauce
   sauce
     .save()
-    .then(() =>
-     Sauce.link= hateoasLinks(req, Sauce._id),
-     res.status(201).json(Sauce)) // Request ok  sauce created
-    .catch((error) =>res.status(400).json({error}) // Error bad request
+    .then((newSauce) =>{
+      const sauceSend = {
+        ...sauce._doc,
+        "link": hateoasLinks(req,newSauce._id),
+      }
+      res.status(201).json(sauceSend)
+    }) // Request ok  sauce created
+    .catch((error) => res.status(400).json({ error }) // Error bad request
     );
 };
 
@@ -72,7 +90,8 @@ exports.modifySauce = (req, res, next) => {
         ? {
             ...JSON.parse(req.body.sauce),
             imageUrl: `/images/${req.file.filename}`,
-          } : {...req.body }; 
+          }
+        : { ...req.body };
       const filename = sauce.imageUrl.split("/images/")[1];
       try {
         if (sauceObject.imageUrl) {
@@ -88,14 +107,18 @@ exports.modifySauce = (req, res, next) => {
         {
           ...sauceObject,
           _id: req.params.id,
-        }, {
+        },
+        {
           new: true,
         }
       )
-        .then((sauce) =>
-        sauce.links= hateoasLinks(req, sauce._id),
-        res.status(200).json(sauce)) // Request ok
-        .catch((error) => res.status(400).json({error})); // Error bad request
+        .then((updateSauce) =>{
+          const sauceSend = {
+            ...updateSauce._doc,
+            links: hateoasLinks(req, updateSauce._id),
+          };
+          res.status(200).json(sauceSend)}) // Request ok
+        .catch((error) => res.status(400).json({ error })); // Error bad request
     }
   });
 };
@@ -105,18 +128,18 @@ exports.modifySauce = (req, res, next) => {
  *****************************************************************/
 exports.deleteSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id }) // Find sauce
-  .then((sauce) => {
-    if (sauce.userId !== req.auth.userId) {
-      return res.status(403).json({message: "non-authorization !"}); // If the user is not the creator => unauthorized message
-    }
-    const filename = sauce.imageUrl.split("/images/")[1];
-    // Delete
-    fs.unlink(`images/${filename}`, () => {
-      Sauce.deleteOne({ _id: req.params.id })
-        .then(() => res.status(204).send()) // No content
-        .catch((error) => res.status(400).json({ error })); // Error bad request
+    .then((sauce) => {
+      if (sauce.userId !== req.auth.userId) {
+        return res.status(403).json({ message: "non-authorization !" }); // If the user is not the creator => unauthorized message
+      }
+      const filename = sauce.imageUrl.split("/images/")[1];
+      // Delete
+      fs.unlink(`images/${filename}`, () => {
+        Sauce.deleteOne({ _id: req.params.id })
+          .then(() => res.status(204).send()) // No content
+          .catch((error) => res.status(400).json({ error })); // Error bad request
+      });
     });
-  });
 };
 
 /*****************************************************************
@@ -132,114 +155,151 @@ exports.likeOrDislike = (req, res, next) => {
       switch (req.body.like) {
         case -1:
           toChange = {
-            $inc: {dislikes: 1 }, // Add a dislike
-            $push: { usersDisliked: userId } // Add the user to the list of users disliked
+            $inc: { dislikes: 1 }, // Add a dislike
+            $push: { usersDisliked: userId }, // Add the user to the list of users disliked
           };
           if (usersLikedExists) {
             toChange = {
-              $inc: {dislikes: 1,likes: -1}, // Add a dislike and remove a like
-              $push: {usersDisliked: userId},
-              $pull: {usersLiked: userId}
+              $inc: { dislikes: 1, likes: -1 }, // Add a dislike and remove a like
+              $push: { usersDisliked: userId },
+              $pull: { usersLiked: userId },
             };
           }
           if (!usersDislikedExists) {
-            Sauce.findByIdAndUpdate({
-                _id: req.params.id
-              }, toChange, {
-                new: true
-              })
-              .then((sauceUpdated) =>
-              sauceUpdated.links= hateoasLinks(req,sauce._id),
-              res.status(200).json(sauceUpdated)) // Request ok
-              .catch((error) => res.status(400).json({error})); // Error bad request
+            Sauce.findByIdAndUpdate(
+              {
+                _id: req.params.id,
+              },
+              toChange,
+              {
+                new: true,
+              }
+            )
+              .then((sauceUpdated) =>{
+                const sauceSend = {
+                  ...sauceUpdated._doc,
+                  "links": hateoasLinks(req, sauceUpdated._id),
+                };
+                res.status(200).json(sauceSend)
+                }) // Request ok
+              .catch((error) => res.status(400).json({ error })); // Error bad request
           } else {
             res
               .status(200)
-              .json({message: "User has already disliked the sauce"});
+              .json({ message: "User has already disliked the sauce" });
           }
           break;
         case 0:
           if (usersLikedExists && usersDislikedExists) {
-            Sauce.findByIdAndUpdate({
-                  _id: req.params.id
-                },
-                (toChange = {
-                  $inc: {dislikes: -1,likes: -1},
-                  $pull: {usersLiked: userId,usersDisliked: userId}
-                }), {
-                  new: true
-                }
-              )
-              .then((sauceUpdated) =>
-              sauceUpdated.links= hateoasLinks(req,sauce._id),
-              res.status(200).json(sauceUpdated)) // Request ok
-              .catch((error) => res.status(400).json({error})); // Error bad request
+            Sauce.findByIdAndUpdate(
+              {
+                _id: req.params.id,
+              },
+              {
+                $inc: { dislikes: -1, likes: -1 },
+                $pull: { usersLiked: userId, usersDisliked: userId },
+              },
+            
+              {
+                new: true,
+              })
+                .then((sauceUpdated) =>{
+                  const sauceSend = {
+                    ...sauceUpdated._doc,
+                    "links": hateoasLinks(req, sauceUpdated._id),
+                  };
+                  res.status(200).json(sauceSend)
+                  }
+                    
+                ) // Request ok
+                .catch((error) => res.status(400).json({ error })); // Error bad request
           } else if (usersLikedExists) {
-            Sauce.findByIdAndUpdate({
-                  _id: req.params.id
-                },
-                (toChange = {
-                  $inc: {likes: -1}, // Remove a like
-                  $pull: {usersLiked: userId} // Remove the user from the list of users liked
-                }), {
-                  new: true
-                }
-              )
-              .then((sauceUpdated) =>
-              sauceUpdated.links= hateoasLinks(req,sauce._id),
-              res.status(200).json(sauceUpdated)) // Request ok
-              .catch((error) => res.status(400).json({error})); // Error bad request
+            Sauce.findByIdAndUpdate(
+              {
+                _id: req.params.id,
+              },
+              toChange = {
+                $inc: { likes: -1 }, // Remove a like
+                $pull: { usersLiked: userId }, // Remove the user from the list of users liked
+              },
+              {
+                new: true,
+              }
+            )
+              .then((sauceUpdated) =>{
+                const sauceSend = {
+                  ...sauceUpdated._doc,
+                  "links": hateoasLinks(req, sauceUpdated._id),
+                };
+                res.status(200).json(sauceSend)
+              }) // Request ok
+              .catch((error) => res.status(400).json({ error })); // Error bad request
           } else if (usersDislikedExists) {
-            Sauce.findByIdAndUpdate({
-                  _id: req.params.id
-                },
-                (toChange = {
-                  $inc: {dislikes: -1}, // Remove a dislike
-                  $pull: {usersDisliked: userId} // Remove the user from the list of users disliked
-                }), {
-                  new: true
-                }
-              )
-              .then((sauceUpdated) =>
-              sauceUpdated.links= hateoasLinks(req,sauce._id),
-              res.status(200).json(sauceUpdated)) // Request ok
-              .catch((error) => res.status(400).json({error})); // Error bad request
+            Sauce.findByIdAndUpdate(
+              {
+                _id: req.params.id,
+              },
+              toChange = {
+                $inc: { dislikes: -1 }, // Remove a dislike
+                $pull: { usersDisliked: userId }, // Remove the user from the list of users disliked
+              },
+              {
+                new: true,
+              }
+            )
+              .then((sauceUpdated) =>{
+                const sauceSend = {
+                  ...sauceUpdated._doc,
+                  "links": hateoasLinks(req, sauceUpdated._id),
+                };
+                res.status(200).json(sauceSend)
+              }) // Request ok
+              .catch((error) => res.status(400).json({ error })); // Error bad request
           } else {
-            res.status(200).json({message: "User's vote is already reset"});
+            res.status(200).json({ message: "User's vote is already reset" });
           }
           break;
         case 1:
           toChange = {
-            $inc: {likes: 1},
-            $push: {usersLiked: userId}
+            $inc: { likes: 1 },
+            $push: { usersLiked: userId },
           };
           if (usersDislikedExists) {
             toChange = {
-              $inc: {dislikes: -1,likes: 1}, // Add a dislike and remove a like
-              $pull: {usersDisliked: userId},
-              $push: {usersLiked: userId}
+              $inc: { dislikes: -1, likes: 1 }, // Add a dislike and remove a like
+              $pull: { usersDisliked: userId },
+              $push: { usersLiked: userId },
             };
           }
           if (!usersLikedExists) {
-            Sauce.findByIdAndUpdate({
-                _id: req.params.id
-              }, toChange, {
-                new: true
-              })
-              .then((sauceUpdated) =>
-              sauceUpdated.links= hateoasLinks(req,sauce._id),
-              res.status(200).json(sauceUpdated)) // Request ok
-              .catch((error) => res.status(400).json({error})); // Error bad request
+            Sauce.findByIdAndUpdate(
+              {
+                _id: req.params.id,
+              },
+              toChange,
+              {
+                new: true,
+              }
+            )
+              .then((sauceUpdated) =>{
+                const sauceSend = {
+                  ...sauceUpdated._doc,
+                  "links": hateoasLinks(req, sauceUpdated._id),
+                };
+                res.status(200).json(sauceSend) 
+                }) // Request ok
+              .catch((error) => res.status(400).json({ error })); // Error bad request
           } else {
             res
               .status(200)
-              .json({message: "User has already liked the sauce"});
+              .json({ message: "User has already liked the sauce" });
           }
           break;
       }
     })
-    .catch((error) => res.status(404).json({error})); // Error not found
+    .catch((error) => res.status(404).json({ error })); // Error not found
 };
+
 
 /*****************************************************************
  *****************  HATEOAS FOR SAUCES    ************************
