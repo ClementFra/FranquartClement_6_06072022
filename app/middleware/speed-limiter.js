@@ -1,5 +1,6 @@
 const slowDown = require("express-slow-down");
 
+// Slow down the responses in order to limit repeated requests by user
 const speedLimiter = slowDown({
   windowMs: 15 * 60 * 1000, // 15 minutes
   delayAfter: 100, // allow 100 requests per 15 minutes, then...

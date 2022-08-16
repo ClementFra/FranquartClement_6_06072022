@@ -1,6 +1,6 @@
 const mongoose = require(`mongoose`);
 
-//model for sauces
+// Schema for sauce
 const sauceSchema = mongoose.Schema({
     userId : {type: String , ref: "User", required: true},
     name: {type: String, required: true},

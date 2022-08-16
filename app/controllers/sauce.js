@@ -31,7 +31,7 @@ exports.readAllSauces = (req, res, next) => {
         sauce.imageUrl = `${req.protocol}://${req.get("host")}${
           sauce.imageUrl
         }`; // Add image URL
-        return { ...sauce.toObject() };
+        return { ...sauce.toObject() }; 
       });
       res.status(200).json(sauces); // Request ok
     })
