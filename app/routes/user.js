@@ -14,7 +14,7 @@ router.post("/login",rateLter, userCtrl.login);
 // Router get
 
 router.get('/', auth, userCtrl.readUser);
-router.get('/export', auth, userCtrl.exportDataUser);
+router.get('/export', auth, userCtrl.exportUser);
 
 // Router put
 

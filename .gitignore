@@ -6,7 +6,8 @@
 
 ### Node ###
 # Logs
-logs
+logs/*
+!logs/.gitkeep
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -282,3 +283,6 @@ fabric.properties
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/node,dotenv,visualstudiocode,phpstorm
+
+images/*
+!images/.gitkeep

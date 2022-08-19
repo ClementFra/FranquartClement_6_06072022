@@ -6,16 +6,16 @@ const multer = require('../middleware/multer-config'); // Multer configurations
 
 // Router get
 
-router.get("/:id", auth, sauceCtrl.readSingleSauce); // Read sauce
+router.get("/:id", auth, sauceCtrl.readSauce); // Read sauce
 router.get("/", auth, sauceCtrl.readAllSauces); // Read all sauces
 
 // Router post
 
-router.post("/", auth, multer, sauceCtrl.createNewSauce); // create sauce
+router.post("/", auth, multer, sauceCtrl.createSauce); // create sauce
 router.post('/:id/like', auth, sauceCtrl.likeOrDislike); // Like or dislike sauce
 
 // Router put
-router.put("/:id", auth, multer, sauceCtrl.modifySauce); // Update sauce
+router.put("/:id", auth, multer, sauceCtrl.UpdateSauce); // Update sauce
 
 // Router delete
 router.delete("/:id", auth, sauceCtrl.deleteSauce); // Delete sauce
