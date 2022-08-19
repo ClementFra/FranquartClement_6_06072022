@@ -166,10 +166,10 @@ exports.likeOrDislike = (req, res, next) => {
                 new: true,
               }
             )
-              .then((sauceUpdated) => {
+              .then((sauceUpdate) => {
                 res
                   .status(200)
-                  .json(hateoasLinks(req, sauceUpdated, sauceUpdated._id));
+                  .json(hateoasLinks(req, sauceUpdate, sauceUpdate._id));
               }) // Request ok
               .catch((error) => res.status(400).json({ error })); // Error bad request
           } else {
@@ -193,10 +193,10 @@ exports.likeOrDislike = (req, res, next) => {
                 new: true,
               }
             )
-              .then((sauceUpdated) => {
+              .then((sauceUpdate) => {
                 res
                   .status(200)
-                  .json(hateoasLinks(req, sauceUpdated, sauceUpdated._id));
+                  .json(hateoasLinks(req, sauceUpdate, sauceUpdate._id));
               }) // Request ok
               .catch((error) => res.status(400).json({ error })); // Error bad request
           } else if (usersLikedExists) {
@@ -212,10 +212,10 @@ exports.likeOrDislike = (req, res, next) => {
                 new: true,
               }
             )
-              .then((sauceUpdated) => {
+              .then((sauceUpdate) => {
                 res
                   .status(200)
-                  .json(hateoasLinks(req, sauceUpdated, sauceUpdated._id));
+                  .json(hateoasLinks(req, sauceUpdate, sauceUpdate._id));
               }) // Request ok
               .catch((error) => res.status(400).json({ error })); // Error bad request
           } else if (usersDislikedExists) {
@@ -231,10 +231,10 @@ exports.likeOrDislike = (req, res, next) => {
                 new: true,
               }
             )
-              .then((sauceUpdated) => {
+              .then((sauceUpdate) => {
                 res
                   .status(200)
-                  .json(hateoasLinks(req, sauceUpdated, sauceUpdated._id));
+                  .json(hateoasLinks(req, sauceUpdate, sauceUpdate._id));
               }) // Request ok
               .catch((error) => res.status(400).json({ error })); // Error bad request
           } else {
@@ -283,7 +283,7 @@ exports.likeOrDislike = (req, res, next) => {
 /*****************************************************************
  *****************  HATEOAS FOR SAUCES    ************************
  *****************************************************************/
-const hateoasLinks = (req, id) => {
+const hateoasLinks = (req, sauce,id) => {
   const URI = `${req.protocol}://${req.get("host") + "/api/sauces/"}`;
   const hateoas = [
     {
@@ -324,7 +324,7 @@ const hateoasLinks = (req, id) => {
     },
   ];
   return {
-    ...sauce._id,
+    ...sauce.toObject(),
     links: hateoas,
   };
 };

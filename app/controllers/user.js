@@ -52,7 +52,7 @@ exports.signup = (req, res, next) => {
         .save() // Save the user
         .then((newUser) => {
           newUser.email = decrypt(newUser.email);
-          res.status(201).json(hateoasLinks(req, newUser, newUser._id)); // Create the user
+          res.status(201).json({user: newUser}); // Create the user
         })
         .catch((error) => res.status(400).json({ error })); // Error bad request
     })
@@ -76,7 +76,7 @@ exports.login = (req, res, next) => {
           if (!valid) {
             return res.status(401).json({ message: "Incorrect password !" }); // Error Unauthorized
           }
-          const userSend = hateoasLinks(req, user._id);
+          const userSend = hateoasLinks(req, user);
           res.status(200).json({
             // Request ok
             token: jwt.sign({ userId: user._id }, process.env.TOKEN_SECRET, {
@@ -230,7 +230,7 @@ const hateoasLinks = (req, user) => {
     },
   ];
   return {
-    ...user.doc,
+    ...user.toObject(),
     links: hateoas,
   };
 };
