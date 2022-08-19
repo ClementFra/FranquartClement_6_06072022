@@ -52,11 +52,7 @@ exports.signup = (req, res, next) => {
         .save() // Save the user
         .then((newUser) => {
           newUser.email = decrypt(newUser.email);
-          const newUserSend = {
-            ...newUser._doc,
-            links: hateoasLinks(req, newUser._id),
-          };
-          res.status(201).json(newUserSend); // Create the user
+          res.status(201).json(hateoasLinks(req, newUser, newUser._id)); // Create the user
         })
         .catch((error) => res.status(400).json({ error })); // Error bad request
     })
@@ -80,10 +76,7 @@ exports.login = (req, res, next) => {
           if (!valid) {
             return res.status(401).json({ message: "Incorrect password !" }); // Error Unauthorized
           }
-          const userSend = {
-            ...user._doc,
-            links: hateoasLinks(req, user._id),
-          };
+          const userSend = hateoasLinks(req, user._id);
           res.status(200).json({
             // Request ok
             token: jwt.sign({ userId: user._id }, process.env.TOKEN_SECRET, {
@@ -107,11 +100,7 @@ exports.readUser = (req, res, next) => {
         res.status(404).json({ message: "User not found!" }); // Error not found
       } else {
         user.email = decrypt(user.email);
-        const userSend = {
-          ...user._doc,
-          links: hateoasLinks(req, user._id),
-        };
-        res.status(200).json(userSend); // Request ok
+        res.status(200).json(hateoasLinks(req, user)); // Request ok
       }
     })
     .catch(
@@ -161,16 +150,10 @@ exports.updateUser = (req, res, next) => {
           update.password = hash;
         }
         // Update user new info in database
-        User.findByIdAndUpdate({ _id: req.auth.userId }, update)
-        .then(
+        User.findByIdAndUpdate({ _id: req.auth.userId }, update).then(
           (userUpdate) => {
             userUpdate.email = decrypt(userUpdate.email);
-            const userSend = {
-              ...userUpdate._doc,
-              links: hateoasLinks(req, userUpdate._id),
-            };
-            
-            res.status(200).json(userSend); // Request ok
+            res.status(200).json(hateoasLinks(req, userUpdate, userUpdate._id)); // Request ok
           }
         );
       }
@@ -208,7 +191,7 @@ exports.deleteUser = (req, res, next) => {
 const hateoasLinks = (req, user) => {
   const URI = `${req.protocol}://${req.get("host") + "/api/auth/"}`;
 
- const hateoas = [
+  const hateoas = [
     {
       rel: "signup",
       title: "Signup",
@@ -248,6 +231,6 @@ const hateoasLinks = (req, user) => {
   ];
   return {
     ...user.doc,
-    links: hateoasLinks
-  }
+    links: hateoas,
+  };
 };

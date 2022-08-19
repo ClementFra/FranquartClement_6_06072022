@@ -6,15 +6,11 @@ const fs = require("fs");
 /*****************************************************************
  *****************  READ SAUCE BY  ID     ************************
  *****************************************************************/
-exports.readSingleSauce = (req, res, next) => {
+exports.readSauce = (req, res, next) => {
   Sauce.findById(req.params.id) // Find the sauce in database
     .then((sauce) => {
       sauce.imageUrl = `${req.protocol}://${req.get("host")}${sauce.imageUrl}`; // Add image URL
-      const sauceSend = {
-        ...sauce._doc,
-        link: hateoasLinks(req, sauce._id),
-      };
-      res.status(200).json(sauceSend); // Request ok
+      res.status(200).json(hateoasLinks(req, sauce, sauce._id)); // Request ok
     })
     .catch(
       (error) => res.status(404).json({ error }) // Error not found
@@ -31,7 +27,7 @@ exports.readAllSauces = (req, res, next) => {
         sauce.imageUrl = `${req.protocol}://${req.get("host")}${
           sauce.imageUrl
         }`; // Add image URL
-        return { ...sauce.toObject() };
+        return hateoasLinks(req, sauce, sauce._id);
       });
       res.status(200).json(sauces); // Request ok
     })
@@ -43,7 +39,7 @@ exports.readAllSauces = (req, res, next) => {
 /*****************************************************************
  *****************    CREATE NEW SAUCE       *********************
  *****************************************************************/
-exports.createNewSauce = (req, res, next) => {
+exports.createSauce = (req, res, next) => {
   if (!req.file) {
     return res.status(422).json({
       message: "Image not found",
@@ -57,6 +53,7 @@ exports.createNewSauce = (req, res, next) => {
   // Creation new model sauce
   const sauceObject = JSON.parse(req.body.sauce); // Get the sauce object
   delete sauceObject._id; // Delete the id
+  delete sauceObject.userId;
   const sauce = new Sauce({
     ...sauceObject, // Add the sauce object
     userId: req.auth.userId,
@@ -66,11 +63,7 @@ exports.createNewSauce = (req, res, next) => {
   sauce
     .save()
     .then((newSauce) => {
-      const sauceSend = {
-        ...sauce._doc,
-        link: hateoasLinks(req, newSauce._id),
-      };
-      res.status(201).json(sauceSend);
+      res.status(201).json(hateoasLinks(req, newSauce, newSauce._id));
     }) // Request ok  sauce created
     .catch(
       (error) => res.status(400).json({ error }) // Error bad request
@@ -80,7 +73,7 @@ exports.createNewSauce = (req, res, next) => {
 /*****************************************************************
  *****************  MODIFY ELEMENT IN  SAUCE    ******************
  *****************************************************************/
-exports.modifySauce = (req, res, next) => {
+exports.updateSauce = (req, res, next) => {
   Sauce.findById(req.params.id).then((sauce) => {
     if (sauce.userId !== req.auth.userId) {
       res.status(403).json({
@@ -114,11 +107,7 @@ exports.modifySauce = (req, res, next) => {
         }
       )
         .then((updateSauce) => {
-          const sauceSend = {
-            ...updateSauce._doc,
-            links: hateoasLinks(req, updateSauce._id),
-          };
-          res.status(200).json(sauceSend);
+          res.status(200).json(hateoasLinks(req, updateSauce, updateSauce._id));
         }) // Request ok
         .catch((error) => res.status(400).json({ error })); // Error bad request
     }
@@ -178,11 +167,9 @@ exports.likeOrDislike = (req, res, next) => {
               }
             )
               .then((sauceUpdated) => {
-                const sauceSend = {
-                  ...sauceUpdated._doc,
-                  links: hateoasLinks(req, sauceUpdated._id),
-                };
-                res.status(200).json(sauceSend);
+                res
+                  .status(200)
+                  .json(hateoasLinks(req, sauceUpdated, sauceUpdated._id));
               }) // Request ok
               .catch((error) => res.status(400).json({ error })); // Error bad request
           } else {
@@ -207,11 +194,9 @@ exports.likeOrDislike = (req, res, next) => {
               }
             )
               .then((sauceUpdated) => {
-                const sauceSend = {
-                  ...sauceUpdated._doc,
-                  links: hateoasLinks(req, sauceUpdated._id),
-                };
-                res.status(200).json(sauceSend);
+                res
+                  .status(200)
+                  .json(hateoasLinks(req, sauceUpdated, sauceUpdated._id));
               }) // Request ok
               .catch((error) => res.status(400).json({ error })); // Error bad request
           } else if (usersLikedExists) {
@@ -228,11 +213,9 @@ exports.likeOrDislike = (req, res, next) => {
               }
             )
               .then((sauceUpdated) => {
-                const sauceSend = {
-                  ...sauceUpdated._doc,
-                  links: hateoasLinks(req, sauceUpdated._id),
-                };
-                res.status(200).json(sauceSend);
+                res
+                  .status(200)
+                  .json(hateoasLinks(req, sauceUpdated, sauceUpdated._id));
               }) // Request ok
               .catch((error) => res.status(400).json({ error })); // Error bad request
           } else if (usersDislikedExists) {
@@ -249,11 +232,9 @@ exports.likeOrDislike = (req, res, next) => {
               }
             )
               .then((sauceUpdated) => {
-                const sauceSend = {
-                  ...sauceUpdated._doc,
-                  links: hateoasLinks(req, sauceUpdated._id),
-                };
-                res.status(200).json(sauceSend);
+                res
+                  .status(200)
+                  .json(hateoasLinks(req, sauceUpdated, sauceUpdated._id));
               }) // Request ok
               .catch((error) => res.status(400).json({ error })); // Error bad request
           } else {
@@ -283,11 +264,9 @@ exports.likeOrDislike = (req, res, next) => {
               }
             )
               .then((sauceUpdated) => {
-                const sauceSend = {
-                  ...sauceUpdated._doc,
-                  links: hateoasLinks(req, sauceUpdated._id),
-                };
-                res.status(200).json(sauceSend);
+                res
+                  .status(200)
+                  .json(hateoasLinks(req, sauceUpdated, sauceUpdated._id));
               }) // Request ok
               .catch((error) => res.status(400).json({ error })); // Error bad request
           } else {
@@ -306,7 +285,7 @@ exports.likeOrDislike = (req, res, next) => {
  *****************************************************************/
 const hateoasLinks = (req, id) => {
   const URI = `${req.protocol}://${req.get("host") + "/api/sauces/"}`;
-  return [
+  const hateoas = [
     {
       rel: "readSingle",
       title: "ReadSingle",
@@ -332,8 +311,8 @@ const hateoasLinks = (req, id) => {
       method: "POST",
     },
     {
-      rel: "modify",
-      title: "modify",
+      rel: "update",
+      title: "update",
       href: URI + id,
       method: "PUT",
     },
@@ -344,4 +323,8 @@ const hateoasLinks = (req, id) => {
       method: "DELETE",
     },
   ];
+  return {
+    ...sauce._id,
+    links: hateoas,
+  };
 };

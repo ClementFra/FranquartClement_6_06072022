@@ -15,7 +15,7 @@ router.post("/", auth, multer, sauceCtrl.createSauce); // create sauce
 router.post('/:id/like', auth, sauceCtrl.likeOrDislike); // Like or dislike sauce
 
 // Router put
-router.put("/:id", auth, multer, sauceCtrl.UpdateSauce); // Update sauce
+router.put("/:id", auth, multer, sauceCtrl.updateSauce); // Update sauce
 
 // Router delete
 router.delete("/:id", auth, sauceCtrl.deleteSauce); // Delete sauce
