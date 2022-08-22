@@ -53,11 +53,7 @@ exports.signup = (req, res, next) => {
         .then((newUser) => {
           console.log(newUser.email);
           user.email = decrypt(newUser.email);
-          const newUserSend= {
-            ...user._doc,
-            "links":hateoasLinks(req, user._id)
-          }
-          res.status(201).json(newUserSend); // Create the user
+          res.status(201).json(hateoasLinks(req,newUser, newUser._id)); // Create the user
         })
         .catch((error) => res.status(400).json({ error })); // Error bad request
     })
@@ -81,10 +77,8 @@ exports.login = (req, res, next) => {
           if (!valid) {
             return res.status(401).json({ message: "Incorrect password !" }); // Error Unauthorized
           }
-          const userSend= {
-            ...user._doc,
-            "links":hateoasLinks(req, user._id)
-          }
+          const userSend= hateoasLinks(req,user)
+
           res.status(200).json({ // Request ok
             userId: user._id,
             token: jwt.sign({ userId: user._id }, process.env.TOKEN_SECRET, {
@@ -108,20 +102,16 @@ exports.readUser = (req, res, next) => {
         res.status(404).json({message: "User not found!"}); // Error not found
       } else {
         user.email = decrypt(user.email);
-        const userSend= {
-          ...user._doc,
-          "links":hateoasLinks(req, user._id)
-        }
-        res.status(200).json(userSend); // Request ok
+        res.status(200).json(hateoasLinks(req,user, user._id)); // Request ok
       }
     })
-    .catch((error) =>console.log(error));
+    .catch((error) => res.status(500).json({ error }));
 };
 
 /*****************************************************************
  *****************  EXPORT THE USER DATA     *********************
  *****************************************************************/
-exports.exportDataUser = (req, res, next) => {
+exports.exportUser = (req, res, next) => {
   User.findById(req.auth.userId)
     .then((user) => {
       if (!user) { // Error if user was not found
@@ -132,8 +122,7 @@ exports.exportDataUser = (req, res, next) => {
         user.email = decrypt(user.email);
         const userText = user.toString();
         res.attachment("user-data.txt");
-        res.type("txt");
-        return res.status(200).send(userText); // Request ok
+        return res.status(200).json(hateoasLinks(req,user)); // Request ok
       }
     })
     .catch((error) =>
@@ -161,12 +150,8 @@ exports.updateUser = (req, res, next) => {
       // Update user new info in database
       User.findByIdAndUpdate({ _id: req.auth.userId }, update)
         .then((userUpdate) => {
-          const userSend = {
-            ...user._doc,
-              "links":hateoasLinks(req, userUpdate._id)
-            };
           userUpdate.email = decrypt(userUpdate.email);
-          res.status(200).json(userSend); // Request ok
+          res.status(200).json(hateoasLinks(req,userUpdate, userUpdate._id)); // Request ok
         })
     }
   })
@@ -200,9 +185,9 @@ exports.deleteUser = (req, res, next) => {
 /*****************************************************************
  *****************    HATEOAS FOR USERS     **********************
  *****************************************************************/
-const hateoasLinks = (req, id ) => {
+const hateoasLinks = (req,user ) => {
   const URI = `${req.protocol}://${req.get("host") + "/api/auth/"}`;
-  return [
+  const hateoas= [
     {
       rel: "signup",
       title: "Signup",
@@ -235,9 +220,13 @@ const hateoasLinks = (req, id ) => {
     },
     {
       rel: "delete",
-      title: "Delete"+ id,
+      title: "Delete",
       href: URI,
       method: "DELETE",
     },
   ];
+  return{
+    ...user._doc,
+    links:hateoas,
+  }
 };
