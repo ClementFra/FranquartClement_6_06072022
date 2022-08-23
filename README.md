@@ -19,7 +19,7 @@ This is a project form the Openclassrooms course for web development curriculum,
 ## Database :
 
 * This API work with MongoDB, you need to signup on "https://www.mongodb.com/cloud/atlas/register" website for get your own URI and put it in the value of MONGO_URI in the .env file to connect the database.
-* Please use mongodb+srv://FRACLEM:Athos59890@cluster0.3bwydbf.mongodb.net/Piiquante?retryWrites=true&w=majority for conect the database with the good cluster.
+
 
 ## Use :
 
